@@ -100,11 +100,6 @@ const config: DocsThemeConfig = {
     placeholder: 'Suchen...',
   },
 
-  // Optional: Gitpod configuration
-  gitpod: {
-    enable: false,
-  },
-
   // Optional: Layout configuration
   banner: {
     key: 'learn-banner',
