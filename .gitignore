@@ -1,0 +1,88 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+yarn.lock
+package-lock.json
+
+# Testing
+coverage/
+
+# Next.js
+/.next/
+/out/
+.env.local
+.env.*.local
+
+# Secrets und Credentials (NIEMALS committen!)
+.env
+.env.local
+.env.production.local
+.env.development.local
+.env.test.local
+.env.*.local
+.env.*.example.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+*.code-workspace
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+
+# Build outputs
+dist/
+build/
+.next/
+out/
+
+# Cache
+.eslintcache
+.stylelintcache
+.turbo
+
+# Temp files
+*.tmp
+*.bak
+*.swp
+.vscode-test
+
+# Environment files (Sicherheit!)
+.env.local
+.env.*.local
+
+# NextAuth.js
+.env*.local
+
+# Production
+.next
+out
+
+# Vercel
+.vercel
+
+# Railway
+.railway
+
+# Docker
+.dockerignore
+docker-compose.override.yml

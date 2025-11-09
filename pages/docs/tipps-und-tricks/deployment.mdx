@@ -1,0 +1,298 @@
+# Deployment Guide
+
+So deployest du deine Wissensdatenbank in Production.
+
+## 🚀 Deployment-Plattformen
+
+### 1. Vercel (Empfohlen für Next.js)
+
+Vercel ist von den Next.js Machern optimiert.
+
+#### Setup
+
+1. Gehe zu https://vercel.com
+2. Registriere dich oder logge dich ein
+3. Klicke "New Project"
+4. Wähle dein GitHub Repo
+5. Konfiguriere Environment Variables
+
+#### Environment Variables setzen
+
+```
+DISCORD_CLIENT_ID=xxx
+DISCORD_CLIENT_SECRET=xxx
+NEXTAUTH_SECRET=xxx
+NEXTAUTH_URL=https://yourdomain.com
+```
+
+#### Deploy
+
+Alle Pushes zu `main` werden automatisch deployed! 🎉
+
+#### Custom Domain
+
+1. Gehe zu Projekt → Settings → Domains
+2. Füge deine Domain hinzu
+3. Folge den DNS-Anweisungen
+
+### 2. Railway.app
+
+Einfache Alternative zu Vercel.
+
+#### Setup
+
+```bash
+npm i -g railway
+railway login
+railway init
+```
+
+#### Umgebungsvariablen
+
+Railway GUI:
+1. Projekt → Variables
+2. Alle Discord/NextAuth Vars hinzufügen
+
+#### Deploy
+
+```bash
+railway up
+```
+
+### 3. Docker + Manual Hosting
+
+Für maximale Kontrolle.
+
+#### Dockerfile
+
+```dockerfile
+FROM node:18-alpine
+
+WORKDIR /app
+
+# Dependencies
+COPY package*.json ./
+RUN npm ci
+
+# Build
+COPY . .
+RUN npm run build
+
+# Start
+EXPOSE 3000
+CMD ["npm", "start"]
+```
+
+#### Docker-Compose
+
+```yaml
+version: '3'
+services:
+  app:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      - DISCORD_CLIENT_ID=${DISCORD_CLIENT_ID}
+      - DISCORD_CLIENT_SECRET=${DISCORD_CLIENT_SECRET}
+      - NEXTAUTH_SECRET=${NEXTAUTH_SECRET}
+      - NEXTAUTH_URL=${NEXTAUTH_URL}
+```
+
+## ✅ Pre-Deployment Checkliste
+
+### Code Quality
+
+- [ ] Keine `console.log` Statements
+- [ ] TypeScript kompiliert ohne Fehler
+- [ ] ESLint läuft ohne Fehler (`npm run lint`)
+- [ ] Tests passen alle (`npm test`)
+- [ ] Build läuft erfolgreich (`npm run build`)
+
+### Security
+
+- [ ] `.env.local` ist in `.gitignore`
+- [ ] Keine hardcodierten Secrets
+- [ ] NextAuth CSRF-Schutz aktiv
+- [ ] HTTPS erzwungen
+- [ ] Discord Redirect URLs korrekt
+
+### Performance
+
+- [ ] Next.js Image Optimization aktiviert
+- [ ] Code Splitting funktioniert
+- [ ] Bundle Size ist angemessen
+- [ ] Keine Performance-Warnings
+
+### Funktionalität
+
+- [ ] Discord Login funktioniert
+- [ ] Alle Routes funktionieren
+- [ ] Suche funktioniert
+- [ ] Dark/Light Mode funktioniert
+- [ ] Mobile Design funktioniert
+
+## 🔐 Environment Variables in Production
+
+### Vercel Example
+
+```bash
+# Setze in Vercel Dashboard unter: Settings > Environment Variables
+DISCORD_CLIENT_ID=your_production_id
+DISCORD_CLIENT_SECRET=your_production_secret
+NEXTAUTH_SECRET=your_super_secret_random_string
+NEXTAUTH_URL=https://yourdomain.com
+```
+
+### Railway Example
+
+Railway hat ein UI für Vars in der Web Console.
+
+### Manuell (Docker/VPS)
+
+```bash
+# In .env auf dem Server
+DISCORD_CLIENT_ID=xxx
+DISCORD_CLIENT_SECRET=xxx
+NEXTAUTH_SECRET=xxx
+NEXTAUTH_URL=https://yourdomain.com
+```
+
+## 📈 Monitoring & Logging
+
+### Vercel Analytics
+
+- Automatisch aktiviert
+- Siehe Performance Metriken im Vercel Dashboard
+- Real User Monitoring (RUM)
+
+### Sentry Integration (Optional)
+
+```typescript
+// pages/_app.tsx
+import * as Sentry from "@sentry/nextjs"
+
+Sentry.init({
+  dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
+})
+```
+
+### Log Aggregation
+
+**Railway**: Logs in Console verfügbar
+**Vercel**: Logs in Deployments Tab
+**Manuell**: Nutze `pm2 logs` oder systemd journal
+
+## 🔄 Continuous Deployment (CI/CD)
+
+### GitHub Actions Example
+
+```yaml
+# .github/workflows/deploy.yml
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - run: npm install
+      - run: npm run build
+      - run: npm run lint
+
+      - name: Deploy to Vercel
+        run: |
+          npx vercel --prod --token ${{ secrets.VERCEL_TOKEN }}
+```
+
+## 🔧 Post-Deployment
+
+### Monitoring Setup
+
+1. **Error Tracking**: Sentry oder ähnlich
+2. **Performance**: Vercel Analytics oder DataDog
+3. **Uptime**: Statuspage.io oder Pingdom
+4. **Logs**: CloudWatch, Loggly, oder Stack Driver
+
+### Backup Strategy
+
+- GitHub ist dein Source Code Backup
+- Datenbank (falls vorhanden): Regelmäßige Backups
+- Secrets: Niemals exportieren!
+
+### Updates
+
+```bash
+# Regelmäßig Dependencies updaten
+npm update
+npm audit fix
+
+# Teste lokal
+npm run build
+
+# Pushe zu GitHub
+git push origin main
+# → Vercel deployed automatisch
+```
+
+## 🐛 Häufige Deployment-Fehler
+
+### Fehler: "Cannot find module"
+
+**Grund**: Dependencies nicht installiert oder Pfade falsch
+**Lösung**:
+```bash
+npm install
+rm node_modules
+npm cache clean --force
+npm install
+```
+
+### Fehler: "NEXTAUTH_SECRET is missing"
+
+**Grund**: Environment Variable nicht gesetzt
+**Lösung**: Setze `NEXTAUTH_SECRET` in Dashboard
+
+### Fehler: "Discord OAuth failed"
+
+**Grund**: Redirect URLs stimmen nicht
+**Lösung**:
+1. Gehe zu Discord Developer Portal
+2. Überprüfe Callback URLs
+3. Sie sollten mit `NEXTAUTH_URL` übereinstimmen
+
+### Fehler: "Build failed: Out of memory"
+
+**Lösung**:
+```bash
+# Lokal bauen und testen
+npm run build
+
+# Falls lokal ok: Vercel hat möglicherweise temporäre Probleme
+# Versuche erneut zu deployen
+```
+
+## 🎯 Deployment Checklist
+
+- [ ] Alle Tests passen lokal
+- [ ] Build ist erfolgreich
+- [ ] Environment Variables sind gesetzt
+- [ ] Discord Redirect URLs sind korrekt
+- [ ] NEXTAUTH_URL ist korrekt
+- [ ] Custom Domain (falls gewünscht)
+- [ ] SSL/HTTPS aktiv
+- [ ] Monitoring/Logging konfiguriert
+- [ ] Backup Strategy definiert
+- [ ] Team benachrichtigt
+
+---
+
+**Herzlichen Glückwunsch zum Deployment! 🚀**

@@ -1,0 +1,338 @@
+# Optimierungs-Tipps
+
+Tipps und Tricks um deine Wissensdatenbank schneller und effizienter zu machen.
+
+## ⚡ Rendering Optimierung
+
+### Static Generation verwenden
+
+```typescript
+// ✅ Best: Schnellste Option
+export async function getStaticProps() {
+  const data = await fetchData()
+  return {
+    props: { data },
+    revalidate: 3600, // ISR: regeneriert nach 1h
+  }
+}
+```
+
+**Wann nutzen?**: Content, das selten ändert (Docs, Blog Posts)
+
+### Incremental Static Regeneration (ISR)
+
+```typescript
+export async function getStaticProps() {
+  return {
+    props: { data },
+    revalidate: 60, // Regeneriert nach 60 Sekunden
+  }
+}
+```
+
+**Vorteile**:
+- Schnell wie SSG
+- Neuer Content nach Zeit
+- Keine Rebuild nötig
+
+## 📦 Code Splitting
+
+### Dynamic Imports
+
+```typescript
+import dynamic from 'next/dynamic'
+
+// Nur laden wenn nötig
+const HeavyComponent = dynamic(() => import('./HeavyComponent'), {
+  loading: () => <p>Loading...</p>,
+  ssr: false, // Auch SSR sparen
+})
+
+export default function Page() {
+  return <HeavyComponent />
+}
+```
+
+### Mit Bedingung
+
+```typescript
+import dynamic from 'next/dynamic'
+
+const AdminPanel = dynamic(() => import('./AdminPanel'), {
+  loading: () => <p>Loading...</p>,
+})
+
+export default function Dashboard({ isAdmin }) {
+  return (
+    <>
+      {isAdmin && <AdminPanel />}
+      {/* Nur geladen wenn isAdmin true */}
+    </>
+  )
+}
+```
+
+## 🖼️ Bild-Optimierung
+
+### Next.js Image Component
+
+```typescript
+import Image from 'next/image'
+
+// ✅ Optimiert automatisch
+<Image
+  src="/image.png"
+  alt="Description"
+  width={500}
+  height={300}
+  quality={75}
+/>
+```
+
+**Vorteile**:
+- Automatische Format-Konvertierung (WebP)
+- Responsive Bilder
+- Lazy Loading
+
+### Externe Bilder
+
+```typescript
+// next.config.js
+module.exports = {
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'cdn.example.com',
+      },
+    ],
+  },
+}
+```
+
+## 🔍 Font Optimization
+
+### Google Fonts
+
+```typescript
+// pages/_app.tsx
+import { Poppins, Inter } from 'next/font/google'
+
+const poppins = Poppins({
+  weight: ['400', '700'],
+  subsets: ['latin'],
+})
+
+export default function App({ Component, pageProps }) {
+  return (
+    <div className={poppins.className}>
+      <Component {...pageProps} />
+    </div>
+  )
+}
+```
+
+**Vorteile**:
+- Selbstgehostet (kein externer Request)
+- Automatische Subsetting
+- Layout Shift Prevention
+
+## 🗜️ Bundle Size
+
+### Analyse des Bundles
+
+```bash
+# Bundle Size analysieren
+npm install -g webpack-bundle-analyzer
+
+# In next.config.js
+const withBundleAnalyzer = require('@next/bundle-analyzer')({
+  enabled: process.env.ANALYZE === 'true',
+})
+
+module.exports = withBundleAnalyzer({
+  // config
+})
+```
+
+Dann:
+```bash
+ANALYZE=true npm run build
+```
+
+### Tree Shaking
+
+```typescript
+// ✅ Gut: Nur was nötig ist
+import { specific } from 'large-library'
+
+// ❌ Vermeiden: Ganzes Modul
+import * as everything from 'large-library'
+```
+
+## 💾 Caching Strategien
+
+### Browser Caching
+
+```typescript
+// pages/api/data.ts
+export default function handler(req, res) {
+  res.setHeader(
+    'Cache-Control',
+    'public, s-maxage=3600, stale-while-revalidate=86400'
+  )
+  res.json({ data: 'example' })
+}
+```
+
+### Response Caching
+
+```typescript
+// next.config.js
+module.exports = {
+  onDemandEntries: {
+    maxInactiveAge: 60 * 1000,
+    pagesBufferLength: 5,
+  },
+}
+```
+
+## 🚀 Database Queries (Falls zutreffend)
+
+### N+1 Problem vermeiden
+
+```typescript
+// ❌ Schlecht: N+1 Queries
+const users = await db.users.find()
+for (const user of users) {
+  const posts = await db.posts.find({ userId: user.id })
+}
+
+// ✅ Gut: 1 Query mit Join
+const users = await db.users.find({
+  include: { posts: true }
+})
+```
+
+### Query Ergebnisse cachen
+
+```typescript
+const cache = new Map()
+
+async function getUser(id) {
+  if (cache.has(id)) {
+    return cache.get(id)
+  }
+  const user = await db.users.find(id)
+  cache.set(id, user)
+  return user
+}
+```
+
+## 🔄 Rendering Performance
+
+### Memoization verwenden
+
+```typescript
+import { memo } from 'react'
+
+// ✅ Komponente wird nicht neu-rendert wenn Props gleich sind
+const ExpensiveComponent = memo(({ data }) => {
+  return <div>{data}</div>
+})
+```
+
+### useCallback für Callbacks
+
+```typescript
+import { useCallback } from 'react'
+
+export default function Component() {
+  // ✅ Funktion wird nicht neu erstellt
+  const handleClick = useCallback(() => {
+    console.log('clicked')
+  }, [])
+
+  return <Button onClick={handleClick} />
+}
+```
+
+## 📊 Monitoring & Metriken
+
+### Web Vitals
+
+```typescript
+// pages/_app.tsx
+export function reportWebVitals(metric) {
+  console.log(metric)
+  // Sende zu Analytics
+  gtag.event('page_view', {
+    page_title: document.title,
+    page_location: window.location.href,
+    page_path: window.location.pathname,
+  })
+}
+```
+
+### Core Web Vitals
+
+| Metrik | Gut | Verbesserung |
+|--------|------|-------------|
+| LCP | < 2.5s | < 4s |
+| FID | < 100ms | < 300ms |
+| CLS | < 0.1 | < 0.25 |
+
+## 🔧 Next.js Konfiguration Optimierungen
+
+```typescript
+// next.config.js
+module.exports = {
+  // Komprimierung
+  compress: true,
+
+  // SWC für schneller Compilation
+  swcMinify: true,
+
+  // Inline CSS in kritischen Pfaden
+  optimizeFonts: true,
+
+  // Image Optimization
+  images: {
+    formats: ['image/avif', 'image/webp'],
+  },
+
+  // Headers für Caching
+  async headers() {
+    return [
+      {
+        source: '/static/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable',
+          },
+        ],
+      },
+    ]
+  },
+}
+```
+
+## ✅ Optimierungs-Checkliste
+
+- [ ] Static Generation für statische Seiten
+- [ ] ISR für semi-dynamische Seiten
+- [ ] Dynamic Imports für große Komponenten
+- [ ] Next.js Image für alle Bilder
+- [ ] Google Fonts richtig integriert
+- [ ] Bundle Size analysiert
+- [ ] Kein N+1 Problem bei Datenbank
+- [ ] React memo für teure Komponenten
+- [ ] useCallback für Event Handler
+- [ ] Caching Header gesetzt
+- [ ] Core Web Vitals passabel
+- [ ] No console errors in Production
+
+---
+
+**Mit diesen Optimierungen wird deine Wissensdatenbank blitzschnell! ⚡**

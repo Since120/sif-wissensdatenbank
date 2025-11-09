@@ -1,0 +1,175 @@
+# Kern-Konzepte
+
+Grundlegende Konzepte, die du verstehen solltest.
+
+## 🏗️ Architektur-Grundlagen
+
+### Client-Server-Modell
+
+Die Wissensdatenbank folgt einem modernen Client-Server-Architektur:
+
+```
+┌─────────────┐
+│   Browser   │ (Client)
+└──────┬──────┘
+       │ HTTP/HTTPS
+       ▼
+┌─────────────┐
+│ Next.js App │ (Server)
+└──────┬──────┘
+       │
+       ▼
+┌─────────────┐
+│  Discord    │ (Auth Provider)
+└─────────────┘
+```
+
+### Request-Response-Zyklus
+
+1. **Request**: Benutzer fordert eine Seite an
+2. **Authentication**: NextAuth.js prüft die Session
+3. **Response**: Server sendet die Seite
+4. **Rendering**: Browser zeigt die Seite an
+
+## 🔐 Authentication Flow
+
+### Discord OAuth
+
+```
+1. Benutzer klickt "Mit Discord anmelden"
+   ↓
+2. Redirect zu Discord
+   ↓
+3. Benutzer authentifiziert sich bei Discord
+   ↓
+4. Discord sendet Code zurück
+   ↓
+5. Backend tauscht Code gegen Token
+   ↓
+6. Session wird erstellt
+   ↓
+7. Benutzer ist angemeldet ✅
+```
+
+## 📊 Datenfluss
+
+### Session Management
+
+```typescript
+// 1. Benutzer authentifiziert sich
+const session = await useSession()
+
+// 2. Session wird gespeichert (verschlüsselt)
+{
+  user: {
+    id: "123456",
+    name: "Username",
+    email: "user@example.com"
+  },
+  expires: "2024-12-31"
+}
+
+// 3. Auf allen Seiten verfügbar
+const { data: session } = useSession()
+```
+
+## 🎨 Frontend-Rendering
+
+### Static Generation (SSG)
+
+```typescript
+// Diese Seite wird beim Build generiert
+export async function getStaticProps() {
+  const data = await fetchData()
+  return {
+    props: { data },
+    revalidate: 60, // ISR: regeneriert nach 60 Sekunden
+  }
+}
+```
+
+### Server-Side Rendering (SSR)
+
+```typescript
+// Diese Seite wird bei jedem Request generiert
+export async function getServerSideProps() {
+  const data = await fetchData()
+  return { props: { data } }
+}
+```
+
+## 🔍 Suchfunktionalität
+
+Die Suchfunktion basiert auf Nextra's eingebauter Suche:
+
+```
+Benutzer gibt Suchbegriff ein
+   ↓
+Client-seitige Suche in Index
+   ↓
+Ergebnisse werden gefiltert
+   ↓
+Matching-Seiten werden angezeigt
+```
+
+## 🌓 Theme-System
+
+### Dark Mode Implementation
+
+```
+1. Next.js Theme Provider
+2. Tailwind CSS Dark Mode Class
+3. System-Preferences oder User Choice
+4. Persistierung im localStorage
+```
+
+Beispiel:
+
+```html
+<!-- Light Mode -->
+<div class="bg-white text-black"></div>
+
+<!-- Dark Mode -->
+<div class="dark:bg-gray-900 dark:text-white"></div>
+```
+
+## 📱 Responsive Design
+
+### Breakpoints
+
+```
+sm  640px
+md  768px
+lg  1024px
+xl  1280px
+2xl 1536px
+```
+
+Verwendung mit Tailwind:
+
+```html
+<!-- Mobile zuerst -->
+<div class="text-sm md:text-base lg:text-lg">
+  Responsive Text
+</div>
+```
+
+## 🔗 Routing
+
+### Next.js File-based Routing
+
+```
+pages/
+├── index.mdx          → /
+├── docs/
+│   ├── getting-started.mdx  → /docs/getting-started
+│   └── fundamentals/
+│       └── best-practices.mdx → /docs/fundamentals/best-practices
+└── api/
+    └── auth/
+        └── [...nextauth].ts → /api/auth/...
+```
+
+---
+
+Diese Konzepte bilden das Fundament der Wissensdatenbank. 🏛️

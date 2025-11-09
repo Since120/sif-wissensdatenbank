@@ -1,0 +1,293 @@
+# Häufig Gestellte Fragen (FAQ)
+
+Hier sind Antworten auf die häufigsten Fragen.
+
+## 🔐 Authentication & Sicherheit
+
+### Warum Discord OAuth?
+
+Discord OAuth bietet:
+- **Sicher**: Industry-standard OAuth 2.0
+- **Einfach**: Einmalige Authentifizierung
+- **Benutzerfreundlich**: Viele haben bereits Discord Account
+- **Zuverlässig**: Discord Backend ist sehr stabil
+
+### Kann ich andere Auth-Provider hinzufügen?
+
+**Ja!** NextAuth.js unterstützt viele Provider:
+
+```typescript
+providers: [
+  DiscordProvider({...}),
+  GoogleProvider({...}),
+  GitHubProvider({...}),
+  // und viele mehr
+]
+```
+
+### Ist mein Passwort sicher?
+
+Es gibt kein Passwort! 🎉
+
+Mit OAuth:
+1. Du sendest dein Passwort **nicht** an diese App
+2. Discord authentifiziert dich
+3. Diese App erhält nur dein öffentliches Profil
+
+### Wie lange ist eine Session gültig?
+
+```typescript
+// Standard: 30 Tage
+session: {
+  maxAge: 30 * 24 * 60 * 60
+}
+```
+
+Du kannst das in der Konfiguration ändern.
+
+---
+
+## 📱 Funktionalität & Features
+
+### Funktioniert die App auf Mobilgeräten?
+
+**Ja!** Die App ist vollständig responsive:
+- Sidebar passt sich an
+- Inhaltsverzeichnis ist mobile-optimiert
+- Touch-friendly Navigation
+
+### Warum ist der Dark Mode Standard?
+
+Dark Mode:
+- Reduiziert Augenbelastung
+- Besser für Nachtarbeit
+- Spart Batterie auf AMOLED-Displays
+- Modern und beliebt
+
+Du kannst aber auch zu Light Mode wechseln!
+
+### Kann ich die Farben ändern?
+
+**Ja!** Bearbeite `tailwind.config.js`:
+
+```typescript
+module.exports = {
+  theme: {
+    extend: {
+      colors: {
+        discord: '#5865F2',
+        'my-custom': '#123456',
+      },
+    },
+  },
+}
+```
+
+Dann in `theme.config.tsx`:
+
+```typescript
+primaryHue: {
+  light: 201,  // HSL Hue für Light Mode
+  dark: 201,   // HSL Hue für Dark Mode
+}
+```
+
+### Wie aktiviere ich die Suche?
+
+Die Suche ist bereits aktiviert!
+
+```
+Strg+K oder ⌘+K
+```
+
+Sie läuft komplett im Browser (keine Server-Anfrage).
+
+---
+
+## 🚀 Deployment & Hosting
+
+### Wo kann ich deployen?
+
+Mehrere Optionen:
+
+1. **Vercel** (Empfohlen) - Kostenlos für Next.js
+2. **Railway** - Einfach, generös kostenlos
+3. **Docker + VPS** - Maximale Kontrolle
+4. **Netlify** - Auch möglich
+
+Siehe [Deployment Guide](/docs/tipps-und-tricks/deployment)
+
+### Ist der kostenlose Plan genug?
+
+**Ja!** Für eine Wissensdatenbank:
+- Vercel Free Plan: ✅ Ausreichend
+- Railway Free Plan: ✅ Ausreichend
+
+Bei höherem Traffic: Upgrade möglich.
+
+### Wie schnell ist das Deployment?
+
+- **Vercel**: ~1-2 Minuten
+- **Railway**: ~2-3 Minuten
+- **Manual**: Abhängig von deinem Server
+
+---
+
+## 📚 Content & Navigation
+
+### Wie füge ich neue Seiten hinzu?
+
+1. Erstelle eine `.mdx` Datei im `pages/docs/` Verzeichnis
+2. Aktualisiere `_meta.json` (optional, für Ordnung)
+3. Seite ist sofort zugänglich!
+
+```
+pages/docs/
+├── neue-seite.mdx     → /docs/neue-seite
+└── kategorie/
+    ├── _meta.json
+    └── artikel.mdx    → /docs/kategorie/artikel
+```
+
+### Kann ich Markdown erweitern?
+
+**Ja!** Du kannst React-Komponenten nutzen:
+
+```mdx
+import { CustomButton } from '@/components/CustomButton'
+
+# Meine Seite
+
+<CustomButton>Klick mich!</CustomButton>
+```
+
+### Wie ändere ich die Sidebar-Ordnung?
+
+Mit `_meta.json`:
+
+```json
+{
+  "getting-started": "🚀 Erste Schritte",
+  "guide": "📖 Anleitung",
+  "api": "🔌 API",
+  "faq": "❓ FAQ"
+}
+```
+
+Die Reihenfolge ist die angezeigte Reihenfolge!
+
+---
+
+## 🐛 Troubleshooting
+
+### "Session is undefined" Fehler
+
+```
+Error: Cannot read properties of undefined (reading 'user')
+```
+
+**Lösung**: Prüfe ob SessionProvider aktiv ist:
+
+```typescript
+// pages/_app.tsx
+import { SessionProvider } from 'next-auth/react'
+
+export default function App({ Component, pageProps: { session, ...pageProps } }) {
+  return (
+    <SessionProvider session={session}>
+      <Component {...pageProps} />
+    </SessionProvider>
+  )
+}
+```
+
+### Discord Login funktioniert nicht
+
+1. Prüfe `.env.local`:
+```bash
+DISCORD_CLIENT_ID=xxx
+DISCORD_CLIENT_SECRET=xxx
+NEXTAUTH_SECRET=xxx
+NEXTAUTH_URL=http://localhost:3000
+```
+
+2. Prüfe Discord Developer Portal:
+   - Client ID & Secret korrekt?
+   - Redirect URLs gesetzt? (z.B. `http://localhost:3000/api/auth/callback/discord`)
+
+3. Prüfe Console-Fehler (F12 → Console)
+
+### Build schlägt fehl
+
+```bash
+# Versuche:
+npm cache clean --force
+rm -rf node_modules
+npm install
+npm run build
+```
+
+Wenn noch nicht gelöst:
+- Check TypeScript Fehler: `npx tsc --noEmit`
+- Check Linting: `npm run lint`
+
+### Suche funktioniert nicht
+
+Suche funktioniert nur auf erstellten Seiten. Prüfe:
+- [ ] Seiten sind in `pages/docs/`
+- [ ] Seiten sind `.mdx` Dateien
+- [ ] Seitentitel sind gesetzt
+- [ ] Browser Console hat keine Fehler
+
+---
+
+## 💡 Best Practices
+
+### Sollte ich den Code ändern?
+
+**Ja!** Der Code ist für dich:
+- Ändere Farben, Logos, Text
+- Füge deine eigenen Features hinzu
+- Passe an deine Bedürfnisse an
+
+Nur pass auf bei:
+- Security-kritischen Dateien (auth, middleware)
+- Dependencies (teste nach Update)
+
+### Wie oft sollte ich updaten?
+
+Regelmäßig aber nicht obsessiv:
+
+```bash
+# Jeden Monat prüfen:
+npm update
+
+# Und auf probleme testen:
+npm run build
+npm run lint
+```
+
+### Sollte ich Tests schreiben?
+
+**Ja, wenn es wächst!**
+
+Für eine Wissensdatenbank optional, aber gut für:
+- API Routes
+- Custom Components
+- Auth Logic
+
+---
+
+## 📧 Weitere Hilfe
+
+Wenn du hier keine Antwort findest:
+
+1. **GitHub Issues**: https://github.com/yourusername/sif-wissensdatenbank/issues
+2. **Discord Community**: Link in Footer
+3. **Nextra Docs**: https://nextra.site
+4. **Next.js Docs**: https://nextjs.org/docs
+5. **NextAuth.js Docs**: https://next-auth.js.org
+
+---
+
+**Noch Fragen? Frag gerne! 🤔**

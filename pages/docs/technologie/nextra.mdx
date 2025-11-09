@@ -1,0 +1,244 @@
+# Nextra - Dokumentations-Framework
+
+Nextra ist ein dokumentations-fokussiertes Framework, das auf Next.js aufbaut.
+
+## 📚 Überblick
+
+Nextra ermöglicht es dir:
+- Schnell professionelle Dokumentation zu erstellen
+- Markdown mit React zu kombinieren
+- Automatische Navigation und Suche
+- Dark Mode Support
+- SEO-Optimiert
+
+## 🎯 Kern-Features
+
+### 1. MDX Support
+
+Du kannst React-Komponenten direkt in Markdown verwenden:
+
+```mdx
+# Überschrift
+
+Das ist **normales** Markdown.
+
+export const Box = () => <div className="bg-blue-500 p-4">Hallo!</div>
+
+<Box />
+```
+
+### 2. Automatische Navigation
+
+Erstelle einfach `.mdx` Dateien in `pages/docs/`:
+
+```
+pages/
+└── docs/
+    ├── guide/
+    │   ├── _meta.json
+    │   ├── installation.mdx
+    │   └── setup.mdx
+    └── api/
+        ├── _meta.json
+        └── endpoints.mdx
+```
+
+Die Navigation wird automatisch generiert!
+
+### 3. Navigation mit _meta.json
+
+```json
+{
+  "guide": "📖 Anleitung",
+  "api": "🔌 API",
+  "examples": "💡 Beispiele"
+}
+```
+
+### 4. Suche
+
+Nextra bietet eingebaute Suche. Nutzer können mit:
+- **Strg+K** oder **⌘+K**: Suchfeld öffnen
+- Text eingeben: Seiten werden gefiltert
+- Enter: Zur ersten Seite navigieren
+
+### 5. Table of Contents
+
+Automatisch aus Überschriften generiert:
+
+```mdx
+# Überschrift 1
+## Überschrift 2
+### Überschrift 3
+```
+
+Wird rechts in der TOC angezeigt!
+
+## 🎨 Markdown Features
+
+### Code Blöcke mit Syntax-Highlighting
+
+```typescript
+function greet(name: string): string {
+  return `Hello, ${name}!`
+}
+```
+
+### Callouts
+
+import { Callout } from 'nextra/components'
+
+<Callout type="info">
+Das ist eine Informations-Box
+</Callout>
+
+<Callout type="warning">
+Das ist eine Warnungs-Box
+</Callout>
+
+<Callout type="error">
+Das ist eine Fehler-Box
+</Callout>
+
+### Tabs
+
+import { Tab, Tabs } from 'nextra/components'
+
+<Tabs items={['TypeScript', 'JavaScript']}>
+  <Tab>
+```typescript
+const greeting: string = "Hello"
+```
+  </Tab>
+  <Tab>
+```javascript
+const greeting = "Hello"
+```
+  </Tab>
+</Tabs>
+
+### Tabellen
+
+| Feature | Status | Beschreibung |
+|---------|--------|-------------|
+| MDX | ✅ | React in Markdown |
+| Suche | ✅ | Eingebaut |
+| Dark Mode | ✅ | Automatisch |
+| SEO | ✅ | Optimiert |
+
+## 🔧 Konfiguration
+
+### theme.config.tsx
+
+```typescript
+const config: DocsThemeConfig = {
+  logo: <span>📚 Wissensdatenbank</span>,
+  project: {
+    link: 'https://github.com/...',
+    icon: '🔗'
+  },
+  chat: {
+    link: 'https://discord.gg/...',
+    icon: '💬'
+  },
+  footer: {
+    text: '© 2024 - All rights reserved'
+  },
+  sidebar: {
+    defaultMenuCollapseLevel: 1,
+    autoCollapse: true,
+  },
+  toc: {
+    float: true,
+    backToTop: true,
+  },
+}
+```
+
+## 💡 Best Practices
+
+### 1. Struktur und Organisation
+
+```
+docs/
+├── getting-started/
+│   ├── _meta.json
+│   ├── installation.mdx
+│   └── setup.mdx
+├── fundamentals/
+│   ├── _meta.json
+│   ├── concepts.mdx
+│   └── architecture.mdx
+└── api-reference/
+    ├── _meta.json
+    └── endpoints.mdx
+```
+
+### 2. Aussagekräftige Dateinamen
+
+```
+✅ setup-discord-oauth.mdx
+✅ api-authentication.mdx
+❌ page1.mdx
+❌ tutorial.mdx
+```
+
+### 3. Überschriften-Hierarchie
+
+```mdx
+# Seiten-Titel (H1)
+
+## Haupt-Abschnitt (H2)
+
+### Unter-Abschnitt (H3)
+
+#### Details (H4)
+```
+
+### 4. Interner Links
+
+```mdx
+[Link zur anderen Seite](/docs/other-page)
+[Link zu Überschrift](#heading-id)
+```
+
+## 🚀 Erweiterte Features
+
+### Custom Components
+
+```typescript
+// components/Warning.tsx
+export function Warning({ children }) {
+  return (
+    <div className="border-l-4 border-red-500 bg-red-50 p-4">
+      {children}
+    </div>
+  )
+}
+```
+
+Verwendung in MDX:
+
+```mdx
+import { Warning } from '@/components/Warning'
+
+<Warning>
+Das ist wichtig!
+</Warning>
+```
+
+### Frontmatter
+
+```mdx
+---
+title: Mein Artikel
+description: Artikel-Beschreibung
+date: 2024-01-15
+---
+
+# Inhalt...
+```
+
+---
+
+**Nextra macht Dokumentation einfach, schön und nutzerfreundlich!** 📖

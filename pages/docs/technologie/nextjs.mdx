@@ -1,0 +1,203 @@
+# Next.js Grundlagen
+
+Next.js ist das moderne React-Framework für Production.
+
+## 🚀 Was ist Next.js?
+
+Next.js bietet:
+
+- **Hybrid Rendering**: Static Generation + Server-Side Rendering
+- **File-based Routing**: Automatische Route-Generierung
+- **API Routes**: Backend ohne separaten Server
+- **Image Optimization**: Automatische Bildoptimierung
+- **Development Experience**: Hot Module Replacement, Fast Refresh
+
+## 📁 Projektstruktur
+
+```
+project/
+├── pages/              # Alle Seiten hier
+│   ├── _app.tsx       # Global App Wrapper
+│   ├── _document.tsx  # HTML Document
+│   ├── index.mdx      # Homepage (/)
+│   ├── about.mdx      # Seite (/about)
+│   └── api/           # API Endpoints
+│       └── health.ts  # GET /api/health
+│
+├── public/            # Statische Assets
+│   └── logo.png
+│
+├── components/        # Reusable Komponenten
+│   └── Button.tsx
+│
+├── styles/            # CSS Dateien
+│   └── globals.css
+│
+└── next.config.js     # Next.js Konfiguration
+```
+
+## 🔄 Rendering Methoden
+
+### Static Generation (SSG)
+
+```typescript
+// Diese Seite wird zur Build-Zeit generiert
+export default function About({ data }) {
+  return <div>{data}</div>
+}
+
+export async function getStaticProps() {
+  const data = await fetch('https://api.example.com/data')
+  return {
+    props: { data },
+    revalidate: 3600, // ISR: regeneriert nach 1h
+  }
+}
+```
+
+**Wann nutzen?** Blog Posts, Marketing Pages, dokumentation
+
+### Server-Side Rendering (SSR)
+
+```typescript
+// Diese Seite wird bei jedem Request neu generiert
+export default function Dashboard({ data }) {
+  return <div>{data}</div>
+}
+
+export async function getServerSideProps() {
+  const data = await fetch('https://api.example.com/data')
+  return { props: { data } }
+}
+```
+
+**Wann nutzen?** Personalisierte Inhalte, häufig ändernde Daten
+
+### Incremental Static Regeneration (ISR)
+
+```typescript
+export async function getStaticProps() {
+  return {
+    props: { /* data */ },
+    revalidate: 60, // Regeneriert nach 60 Sekunden
+  }
+}
+```
+
+## 🌐 API Routes
+
+### Einfacher Endpoint
+
+```typescript
+// pages/api/hello.ts
+import type { NextApiRequest, NextApiResponse } from 'next'
+
+type ResponseData = {
+  message: string
+}
+
+export default function handler(
+  req: NextApiRequest,
+  res: NextApiResponse<ResponseData>
+) {
+  if (req.method === 'GET') {
+    res.status(200).json({ message: 'Hello World' })
+  } else {
+    res.status(405).end()
+  }
+}
+```
+
+Aufruf: `GET /api/hello` → `{ message: "Hello World" }`
+
+### Mit Authentifizierung
+
+```typescript
+// pages/api/user.ts
+import { getSession } from 'next-auth/react'
+import type { NextApiRequest, NextApiResponse } from 'next'
+
+export default async function handler(
+  req: NextApiRequest,
+  res: NextApiResponse
+) {
+  const session = await getSession({ req })
+
+  if (!session) {
+    res.status(401).json({ error: 'Unauthorized' })
+    return
+  }
+
+  res.status(200).json({ user: session.user })
+}
+```
+
+## 📦 Umgebungsvariablen
+
+### .env.local
+
+```bash
+# Nur Backend
+DATABASE_URL=postgresql://...
+
+# Browser kann zugreifen (NEXT_PUBLIC_ Prefix)
+NEXT_PUBLIC_API_URL=https://api.example.com
+```
+
+```typescript
+// Backend
+const db = process.env.DATABASE_URL
+
+// Frontend & Backend
+const apiUrl = process.env.NEXT_PUBLIC_API_URL
+```
+
+## 🎯 Performance Tipps
+
+### 1. **Dynamic Imports**
+
+```typescript
+// Komponente wird nur bei Bedarf geladen
+const HeavyComponent = dynamic(
+  () => import('./HeavyComponent'),
+  { loading: () => <p>Loading...</p> }
+)
+```
+
+### 2. **Image Optimization**
+
+```typescript
+import Image from 'next/image'
+
+// Next.js optimiert automatisch
+<Image
+  src="/image.png"
+  alt="Description"
+  width={500}
+  height={300}
+/>
+```
+
+### 3. **Link Prefetching**
+
+```typescript
+import Link from 'next/link'
+
+// Next.js preloaded den Link
+<Link href="/about" prefetch>
+  About
+</Link>
+```
+
+## 🛠️ Development Commands
+
+```bash
+npm run dev      # Start development server (http://localhost:3000)
+npm run build    # Build for production
+npm start        # Start production server
+npm run lint     # Run ESLint
+```
+
+---
+
+**Next.js macht moderne Web-Entwicklung einfach und effizient!** ⚡

@@ -1,0 +1,242 @@
+# Debugging Tipps & Tricks
+
+Effektives Debugging spart Zeit und Frustration.
+
+## 🔍 Browser Developer Tools
+
+### Console
+
+```bash
+# Fehler anschauen
+console.log('Debug Info:', variable)
+console.error('Fehler:', error)
+console.warn('Warnung:', warning)
+```
+
+### Network Tab
+
+Öffne die Network Tab um zu sehen:
+- Welche Requests gestellt werden
+- Response Status (200, 404, 500)
+- Request/Response Headers
+- Payload (POST/PUT Data)
+
+**Shortcut**: `F12` → Network Tab
+
+### React DevTools
+
+Installiere die React DevTools Browser-Extension:
+
+1. Chrome: [React DevTools](https://chrome.google.com/webstore/detail/react-developer-tools/)
+2. Firefox: [React DevTools](https://addons.mozilla.org/firefox/)
+
+Damit kannst du:
+- Komponenten-Struktur sehen
+- Props und State inspizieren
+- Komponenten-Highlights aktivieren
+
+## 📋 Next.js spezifisches Debugging
+
+### NextAuth.js Debug-Modus
+
+```typescript
+// pages/api/auth/[...nextauth].ts
+export const authOptions = {
+  debug: true, // Aktiviert Debug-Logs
+  // ... rest der config
+}
+```
+
+**Output**: Schaue in der Console nach NextAuth.js Logs
+
+### Build-Fehler
+
+```bash
+npm run build
+```
+
+Hilfreiche Output:
+- TypeScript Fehler
+- Build-Fehler
+- Performance-Warnings
+
+### Development Server Logs
+
+```bash
+npm run dev
+```
+
+Server gibt Logs aus für:
+- Route-Hits
+- Hot Module Replacement Updates
+- Fehler während des Renderings
+
+## 🐛 Häufige Fehler und Lösungen
+
+### Problem: "Cannot find module"
+
+```
+Error: Cannot find module '@/components/Button'
+```
+
+**Debugging**:
+1. Prüfe die genaue Datei-Pfade
+2. Prüfe tsconfig.json `baseUrl` und `paths`
+3. Prüfe die Case-Sensitivität (Windows vs Linux)
+
+**Lösung**:
+
+```typescript
+// tsconfig.json
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./*"]
+    }
+  }
+}
+```
+
+### Problem: "Session is undefined"
+
+```typescript
+// ❌ Problem
+const { data: session } = useSession()
+console.log(session.user.name) // TypeError!
+
+// ✅ Lösung
+const { data: session } = useSession()
+if (!session) return <p>Loading...</p>
+console.log(session.user.name) // OK
+```
+
+### Problem: "Type is not assignable"
+
+TypeScript Fehler:
+
+```
+Type 'string | undefined' is not assignable to type 'string'
+```
+
+**Debugging**:
+1. Nutze `typeof` zu prüfen
+2. Nutze Optional Chaining `?.`
+3. Nutze Nullish Coalescing `??`
+
+**Lösung**:
+
+```typescript
+// ✅ Optional Chaining
+const name = user?.profile?.name
+
+// ✅ Nullish Coalescing
+const name = user?.name ?? 'Guest'
+
+// ✅ Type Guard
+if (typeof name === 'string') {
+  console.log(name.toUpperCase())
+}
+```
+
+## 🔧 Debugging-Strategien
+
+### 1. Divide and Conquer
+
+Deaktiviere Code schrittweise um das Problem zu isolieren:
+
+```typescript
+// Kommentiere Teile aus
+// const data = await fetchData()
+console.log('Erreichte ich diese Stelle?')
+// return <Component data={data} />
+```
+
+### 2. Logging-Strategie
+
+```typescript
+// Nutze strukturiertes Logging
+console.log('❌ Fehler:', error)
+console.log('⚠️ Warnung:', warning)
+console.log('✅ Success:', result)
+console.log('🔍 Debug:', variable)
+```
+
+### 3. DevTools Breakpoints
+
+```typescript
+// Setze einen Breakpoint
+debugger // Browser stoppt hier
+console.log('Nach Breakpoint')
+```
+
+**Steps Through Code**:
+- F10: Nächste Zeile (Step Over)
+- F11: In Funktion (Step Into)
+- Shift+F11: Aus Funktion (Step Out)
+
+## 📊 Performance Debugging
+
+### Next.js Analytics
+
+```typescript
+// pages/_app.tsx
+import { useRouter } from 'next/router'
+import { useEffect } from 'react'
+
+export default function App({ Component, pageProps }) {
+  const router = useRouter()
+
+  useEffect(() => {
+    const handleRouteChange = (url) => {
+      console.log('Navigiere zu:', url)
+    }
+
+    router.events.on('routeChangeStart', handleRouteChange)
+    return () => router.events.off('routeChangeStart', handleRouteChange)
+  }, [router])
+
+  return <Component {...pageProps} />
+}
+```
+
+### Web Vitals
+
+```typescript
+import { getCLS, getFID, getFCP, getLCP, getTTFB } from 'web-vitals'
+
+export function reportWebVitals(metric) {
+  console.log(metric)
+}
+```
+
+## 🚀 Häufige Next.js Debugging Commands
+
+```bash
+# Build mit detaillierten Fehler-Messages
+npm run build -- --debug
+
+# Dev Server mit Verbose Logging
+npm run dev -- --debug
+
+# Prüfe auf Type-Fehler
+npx tsc --noEmit
+
+# ESLint Fehler prüfen
+npm run lint
+```
+
+## 📝 Debugging-Checkliste
+
+- [ ] Browser Console für Fehler prüfen
+- [ ] Network Tab für API-Fehler prüfen
+- [ ] React DevTools für State/Props prüfen
+- [ ] NextAuth Session aktiv?
+- [ ] .env.local Variablen gesetzt?
+- [ ] Build läuft ohne Fehler? (`npm run build`)
+- [ ] TypeScript Fehler? (`npx tsc --noEmit`)
+- [ ] Alle Dependencies installiert? (`npm install`)
+
+---
+
+**Gutes Debugging ist eine Kunst, die man meistern kann! 🎯**
