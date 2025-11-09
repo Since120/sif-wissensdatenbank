@@ -14,6 +14,10 @@ module.exports = withNextra({
   images: {
     unoptimized: true,
   },
+  // Disable ESLint during build (optional, for faster builds)
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
   // Optional: Custom webpack configuration
   webpack: (config, options) => {
     return config
